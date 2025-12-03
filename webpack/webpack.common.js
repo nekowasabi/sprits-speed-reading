@@ -7,6 +7,7 @@ module.exports = {
   entry: {
     background: path.resolve(__dirname, '../src/background/service.ts'),
     content: path.resolve(__dirname, '../src/content/index.tsx'),
+    options: path.resolve(__dirname, '../src/options/index.tsx'),
   },
   output: {
     path: path.resolve(__dirname, '../dist'),
@@ -47,6 +48,7 @@ module.exports = {
       '@shared': path.resolve(__dirname, '../src/shared'),
       '@background': path.resolve(__dirname, '../src/background'),
       '@content': path.resolve(__dirname, '../src/content'),
+      '@options': path.resolve(__dirname, '../src/options'),
     },
   },
   plugins: [
@@ -65,6 +67,7 @@ module.exports = {
           },
         },
         { from: 'icons', to: 'icons' },
+        { from: 'public/options.html', to: 'options.html' },
       ],
     }),
   ],
