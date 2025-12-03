@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Spritz Speed Reader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Spritz-style speed reading overlay for any webpage",
   "permissions": [
     "activeTab",
@@ -32,5 +32,9 @@
       },
       "description": "Toggle Spritz Speed Reader"
     }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
   }
 }
