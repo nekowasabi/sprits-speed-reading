@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-firefox/
+web-ext-artifacts/
+
+# Coverage
+coverage/
+
+# Temporary files
+tmp/
+*.bak
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Lock files (optional, uncomment if needed)
+# package-lock.json
