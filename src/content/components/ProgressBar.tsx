@@ -5,6 +5,7 @@ interface ProgressBarProps {
 export function ProgressBar({ progress }: ProgressBarProps): JSX.Element {
   return (
     <div
+      data-testid="progress-bar"
       style={{
         width: '80%',
         maxWidth: '600px',

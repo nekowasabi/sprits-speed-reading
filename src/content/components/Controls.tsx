@@ -52,6 +52,7 @@ export function Controls({
 
   return (
     <div
+      data-testid="controls"
       style={{
         display: 'flex',
         gap: '20px',
