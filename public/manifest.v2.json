@@ -29,7 +29,10 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "spritz-speed-reader@example.com"
+      "id": "spritz-speed-reader@example.com",
+      "data_collection_permissions": {
+        "required": false
+      }
     }
   },
   "commands": {
