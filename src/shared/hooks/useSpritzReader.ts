@@ -23,6 +23,7 @@ interface UseSpritzReaderReturn {
   setMaxChars: (maxChars: number) => void;
   adjustMaxChars: (delta: number) => void;
   reset: () => void;
+  setWords: (words: string[]) => void;
   currentWord: string;
   progress: number;
 }
@@ -173,6 +174,26 @@ export function useSpritzReader(): UseSpritzReaderReturn {
     }));
   }, [clearPlayInterval, state.maxChars]);
 
+  /**
+   * 単語配列を直接設定する（AI処理結果などを反映するため）
+   * @param words - 新しい単語配列
+   */
+  const setWords = useCallback(
+    (words: string[]) => {
+      clearPlayInterval();
+      rawWordsRef.current = words;
+      const processedWords = preprocessWords(words, state.maxChars);
+
+      setState((prev) => ({
+        ...prev,
+        isPaused: true,
+        currentWordIndex: 0,
+        words: processedWords,
+      }));
+    },
+    [clearPlayInterval, state.maxChars]
+  );
+
   // Auto-start on initialization
   useEffect(() => {
     if (isInitialized && state.words.length > 0 && !state.isPaused && !intervalRef.current) {
@@ -198,6 +219,7 @@ export function useSpritzReader(): UseSpritzReaderReturn {
     setMaxChars,
     adjustMaxChars,
     reset,
+    setWords,
     currentWord,
     progress,
   };
