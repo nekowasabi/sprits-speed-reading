@@ -1,6 +1,6 @@
 {
   "name": "spritz-speed-reader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Spritz-style speed reading browser extension for Firefox and Chrome",
   "scripts": {
     "sync-version": "node -e \"const fs=require('fs');const{version}=require('./package.json');['public/manifest.v2.json','public/manifest.v3.json'].forEach(f=>{const m=JSON.parse(fs.readFileSync(f));m.version=version;fs.writeFileSync(f,JSON.stringify(m,null,2)+'\\n')});console.log('Synced version:',version)\"",
