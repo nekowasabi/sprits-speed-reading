@@ -109,7 +109,6 @@ export class OpenRouterClient implements IOpenRouterClient {
     // プロバイダ指定がある場合は追加
     if (params.provider && params.provider.trim() !== '') {
       requestBody.provider = { order: [params.provider.trim()] };
-      console.log('[OpenRouterClient] Using provider:', params.provider);
     }
 
     return this.retry(async () => {

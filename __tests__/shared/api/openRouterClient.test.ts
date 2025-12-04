@@ -230,4 +230,57 @@ describe('OpenRouterClient', () => {
     // 注: invalid response formatはリトライが発生するためタイムアウトする
     // 実際のエラーハンドリングは401/402テストでカバー
   });
+
+  describe('network error handling', () => {
+    it('should handle NetworkError gracefully', async () => {
+      // NetworkError をシミュレート（Firefox Content Script からの外部API呼び出しでよく発生）
+      mockFetch.mockRejectedValue(new TypeError('NetworkError when attempting to fetch resource.'));
+
+      const client = new OpenRouterClient('sk-or-valid-key');
+      await expect(
+        client.generateCompletion({
+          model: 'test-model',
+          messages: [{ role: 'user', content: 'Test' }],
+        })
+      ).rejects.toThrow(TypeError);
+    });
+
+    it('should retry on network failure and eventually succeed', async () => {
+      // 最初2回失敗、3回目で成功
+      mockFetch
+        .mockRejectedValueOnce(new TypeError('NetworkError'))
+        .mockRejectedValueOnce(new TypeError('NetworkError'))
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            choices: [{ message: { content: 'Success after retries' } }],
+          }),
+        });
+
+      const client = new OpenRouterClient('sk-or-valid-key');
+      const result = await client.generateCompletion({
+        model: 'test-model',
+        messages: [{ role: 'user', content: 'Test' }],
+      });
+
+      expect(result).toBe('Success after retries');
+      expect(mockFetch).toHaveBeenCalledTimes(3);
+    }, 15000); // タイムアウトを15秒に延長（リトライの指数バックオフのため）
+
+    it('should throw after max retries exceeded', async () => {
+      // 4回すべて失敗（初回 + リトライ3回）
+      mockFetch.mockRejectedValue(new TypeError('NetworkError'));
+
+      const client = new OpenRouterClient('sk-or-valid-key');
+      await expect(
+        client.generateCompletion({
+          model: 'test-model',
+          messages: [{ role: 'user', content: 'Test' }],
+        })
+      ).rejects.toThrow(TypeError);
+
+      // 初回 + リトライ3回 = 合計4回
+      expect(mockFetch).toHaveBeenCalledTimes(4);
+    }, 20000); // タイムアウトを20秒に延長
+  });
 });

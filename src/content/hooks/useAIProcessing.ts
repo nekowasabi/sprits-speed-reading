@@ -2,19 +2,18 @@
  * useAIProcessingフック
  * AI処理（本文抽出、要約）の状態管理とAPI呼び出しを担当
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AIProcessingState, AISettings } from '../../shared/types';
-import {
-  extractMainContent as extractMainContentAPI,
-  summarizeContent as summarizeContentAPI,
-} from '../../shared/api/aiService';
+import { summarizeContent as summarizeContentAPI } from '../../shared/api/aiService';
+import { extractCleanText } from '../../shared/utils/htmlCleaner';
 
 interface UseAIProcessingResult {
   state: AIProcessingState;
-  extractContent: () => Promise<string[]>;
+  extractContent: () => string[];
   summarizeContent: () => Promise<string[]>;
   resetToOriginal: () => void;
   hasApiKey: boolean;
+  isSettingsLoaded: boolean;
 }
 
 /**
@@ -32,7 +31,12 @@ export const useAIProcessing = (originalContent: string): UseAIProcessingResult 
   });
 
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
+  const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
   const [settings, setSettings] = useState<AISettings | null>(null);
+
+  // キャッシュをuseRefで管理（クロージャ問題を回避）
+  const extractedTextRef = useRef<string | null>(null);
+  const summaryTextRef = useRef<string | null>(null);
 
   // APIキーの存在確認
   useEffect(() => {
@@ -53,12 +57,15 @@ export const useAIProcessing = (originalContent: string): UseAIProcessingResult 
           openRouterModel: model,
           openRouterProvider: provider,
         });
+        setIsSettingsLoaded(true);
       }
     );
   }, []);
 
   // コンテンツが変更されたらキャッシュをクリア
   useEffect(() => {
+    extractedTextRef.current = null;
+    summaryTextRef.current = null;
     setState({
       isLoading: false,
       error: null,
@@ -70,57 +77,47 @@ export const useAIProcessing = (originalContent: string): UseAIProcessingResult 
 
   /**
    * 本文を抽出する
+   * DOMベースの抽出（API呼び出しなし、同期処理）
    * キャッシュがある場合はそれを使用
    */
-  const extractContent = async (): Promise<string[]> => {
-    if (!settings) {
-      throw new Error('AI設定が読み込まれていません');
-    }
-
-    // キャッシュがある場合はそれを使用
-    if (state.extractedText) {
+  const extractContent = useCallback((): string[] => {
+    // キャッシュチェックはrefを使用（クロージャ問題を回避）
+    if (extractedTextRef.current) {
       setState((prev) => ({ ...prev, mode: 'extracted', error: null }));
-      return state.extractedText.split(/\s+/);
+      return extractedTextRef.current.split(/\s+/).filter((word) => word.length > 0);
     }
 
-    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+    // DOMベースの本文抽出（同期処理）
+    const extracted = extractCleanText();
 
-    try {
-      const extracted = await extractMainContentAPI(originalContent, settings);
+    // キャッシュを更新
+    extractedTextRef.current = extracted;
 
-      setState({
-        isLoading: false,
-        error: null,
-        mode: 'extracted',
-        extractedText: extracted,
-        summaryText: state.summaryText, // 既存の要約は保持
-      });
+    // 関数形式で更新（既存の要約は保持）
+    setState((prev) => ({
+      ...prev,
+      isLoading: false,
+      error: null,
+      mode: 'extracted',
+      extractedText: extracted,
+    }));
 
-      return extracted.split(/\s+/);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }));
-      throw error;
-    }
-  };
+    return extracted.split(/\s+/).filter((word) => word.length > 0);
+  }, []);
 
   /**
    * コンテンツを要約する
    * キャッシュがある場合はそれを使用
    */
-  const summarizeContent = async (): Promise<string[]> => {
+  const summarizeContent = useCallback(async (): Promise<string[]> => {
     if (!settings) {
       throw new Error('AI設定が読み込まれていません');
     }
 
-    // キャッシュがある場合はそれを使用
-    if (state.summaryText) {
+    // キャッシュチェックはrefを使用（クロージャ問題を回避）
+    if (summaryTextRef.current) {
       setState((prev) => ({ ...prev, mode: 'summary', error: null }));
-      return state.summaryText.split(/\s+/);
+      return summaryTextRef.current.split(/\s+/);
     }
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
@@ -128,13 +125,17 @@ export const useAIProcessing = (originalContent: string): UseAIProcessingResult 
     try {
       const summary = await summarizeContentAPI(originalContent, settings);
 
-      setState({
+      // キャッシュを更新
+      summaryTextRef.current = summary;
+
+      // 関数形式で更新（既存の抽出結果は保持）
+      setState((prev) => ({
+        ...prev,
         isLoading: false,
         error: null,
         mode: 'summary',
-        extractedText: state.extractedText, // 既存の抽出結果は保持
         summaryText: summary,
-      });
+      }));
 
       return summary.split(/\s+/);
     } catch (error) {
@@ -146,7 +147,7 @@ export const useAIProcessing = (originalContent: string): UseAIProcessingResult 
       }));
       throw error;
     }
-  };
+  }, [originalContent, settings]);
 
   /**
    * オリジナルモードに戻す
@@ -166,5 +167,6 @@ export const useAIProcessing = (originalContent: string): UseAIProcessingResult 
     summarizeContent,
     resetToOriginal,
     hasApiKey,
+    isSettingsLoaded,
   };
 };

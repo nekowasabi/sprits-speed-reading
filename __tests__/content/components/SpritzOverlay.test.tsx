@@ -12,6 +12,7 @@ import * as aiService from '../../../src/shared/api/aiService';
 
 // モジュールをモック化
 jest.mock('../../../src/shared/utils/textExtractor');
+jest.mock('../../../src/shared/utils/htmlCleaner');
 jest.mock('../../../src/shared/hooks/useSettings');
 jest.mock('../../../src/shared/api/aiService');
 
@@ -30,6 +31,9 @@ describe('SpritzOverlay - AI Integration', () => {
   const mockOnClose = jest.fn();
   const mockExtractWords = textExtractor.extractWords as jest.MockedFunction<
     typeof textExtractor.extractWords
+  >;
+  const mockGetCleanPageText = textExtractor.getCleanPageText as jest.MockedFunction<
+    typeof textExtractor.getCleanPageText
   >;
   const mockExtractSelectedWords =
     textExtractor.extractSelectedWords as jest.MockedFunction<
@@ -53,6 +57,7 @@ describe('SpritzOverlay - AI Integration', () => {
 
     // デフォルトのモック設定
     mockExtractWords.mockReturnValue(['Test', 'words', 'from', 'page']);
+    mockGetCleanPageText.mockReturnValue('Test words from page');
     mockExtractSelectedWords.mockReturnValue(null);
     mockLoadSettings.mockResolvedValue({ wpm: 300, maxChars: 12 });
     mockSaveSettings.mockImplementation(() => {});
