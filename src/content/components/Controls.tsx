@@ -1,4 +1,5 @@
 import { MIN_WPM, MAX_WPM, WPM_STEP, MIN_MAX_CHARS, MAX_MAX_CHARS } from '@shared/types';
+import { browserAdapter } from '@shared/adapters/BrowserAdapter';
 
 interface ControlsProps {
   wpm: number;
@@ -41,6 +42,11 @@ export function Controls({
   const closeButtonStyle: React.CSSProperties = {
     ...buttonStyle,
     backgroundColor: '#dc3545',
+  };
+
+  const settingsButtonStyle: React.CSSProperties = {
+    ...buttonStyle,
+    backgroundColor: '#6c757d',
   };
 
   const labelStyle: React.CSSProperties = {
@@ -99,6 +105,15 @@ export function Controls({
           style={{ width: '100px' }}
         />
       </div>
+
+      <button
+        onClick={() => browserAdapter.runtime.openOptionsPage()}
+        style={settingsButtonStyle}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#5a6268')}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#6c757d')}
+      >
+        ⚙️ Settings
+      </button>
 
       <button
         onClick={onClose}

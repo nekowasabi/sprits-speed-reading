@@ -38,9 +38,9 @@ export const useAIProcessing = (originalContent: string): UseAIProcessingResult 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chromeAPI = (globalThis as any).chrome;
-    if (!chromeAPI?.storage?.sync) return;
+    if (!chromeAPI?.storage?.local) return;
 
-    chromeAPI.storage.sync.get(
+    chromeAPI.storage.local.get(
       ['openrouterApiKey', 'openRouterModel', 'openRouterProvider'],
       (items: Record<string, string>) => {
         const apiKey = items.openrouterApiKey || '';

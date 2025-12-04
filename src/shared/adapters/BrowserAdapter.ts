@@ -9,6 +9,7 @@ export interface IStorageArea {
 
 export interface IStorageAdapter {
   local: IStorageArea;
+  sync: IStorageArea;
 }
 
 export type MessageListener = (
@@ -21,6 +22,7 @@ export interface IRuntimeAdapter {
     addListener(callback: MessageListener): void;
   };
   sendMessage(message: unknown): Promise<unknown>;
+  openOptionsPage(): Promise<void>;
 }
 
 export interface IBrowserAdapter {
@@ -50,6 +52,20 @@ export class BrowserAdapter implements IBrowserAdapter {
           return browser.storage.local.clear();
         },
       },
+      sync: {
+        get: async (keys: string[]) => {
+          return browser.storage.sync.get(keys);
+        },
+        set: async (items: Record<string, unknown>) => {
+          return browser.storage.sync.set(items);
+        },
+        remove: async (keys: string[]) => {
+          return browser.storage.sync.remove(keys);
+        },
+        clear: async () => {
+          return browser.storage.sync.clear();
+        },
+      },
     };
 
     this.runtime = {
@@ -60,6 +76,11 @@ export class BrowserAdapter implements IBrowserAdapter {
       },
       sendMessage: async (message: unknown) => {
         return browser.runtime.sendMessage(message);
+      },
+      openOptionsPage: async () => {
+        // Content Script から直接 openOptionsPage() は呼び出せないため
+        // Background Script にメッセージを送信して処理を委譲
+        return browser.runtime.sendMessage({ type: 'OPEN_OPTIONS_PAGE' });
       },
     };
   }
