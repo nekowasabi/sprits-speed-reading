@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { version } = require('../package.json');
 
 module.exports = {
@@ -67,8 +68,12 @@ module.exports = {
           },
         },
         { from: 'icons', to: 'icons' },
-        { from: 'public/options.html', to: 'options.html' },
       ],
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, '../public/options.html'),
+      filename: 'options.html',
+      chunks: ['options'],
     }),
   ],
   optimization: {
