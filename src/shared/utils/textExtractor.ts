@@ -1,5 +1,3 @@
-import { extractCleanText } from './htmlCleaner';
-
 /**
  * Extract readable text from the page.
  *
@@ -8,28 +6,6 @@ import { extractCleanText } from './htmlCleaner';
 export function extractWords(): string[] {
   const text = document.body.innerText || '';
   return text.split(/\s+/).filter((word) => word.length > 0);
-}
-
-/**
- * 不要要素を除去したクリーンなテキストを単語配列として抽出する
- *
- * ナビゲーション、広告、サイドバー等を除去した本文のみを返す。
- * AI処理前の前処理として使用することで、送信テキスト量を削減できる。
- *
- * @returns クリーンな本文から抽出した単語配列
- */
-export function extractCleanWords(): string[] {
-  const text = extractCleanText();
-  return text.split(/\s+/).filter((word) => word.length > 0);
-}
-
-/**
- * 不要要素を除去したクリーンなテキストを文字列として取得する
- *
- * @returns クリーンな本文テキスト
- */
-export function getCleanPageText(): string {
-  return extractCleanText();
 }
 
 /**
