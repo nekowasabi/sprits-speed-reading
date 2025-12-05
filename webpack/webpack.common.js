@@ -1,14 +1,12 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { version } = require('../package.json');
 
 module.exports = {
   entry: {
     background: path.resolve(__dirname, '../src/background/service.ts'),
     content: path.resolve(__dirname, '../src/content/index.tsx'),
-    options: path.resolve(__dirname, '../src/options/index.tsx'),
   },
   output: {
     path: path.resolve(__dirname, '../dist'),
@@ -49,7 +47,6 @@ module.exports = {
       '@shared': path.resolve(__dirname, '../src/shared'),
       '@background': path.resolve(__dirname, '../src/background'),
       '@content': path.resolve(__dirname, '../src/content'),
-      '@options': path.resolve(__dirname, '../src/options'),
     },
   },
   plugins: [
@@ -69,11 +66,6 @@ module.exports = {
         },
         { from: 'icons', to: 'icons' },
       ],
-    }),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, '../public/options.html'),
-      filename: 'options.html',
-      chunks: ['options'],
     }),
   ],
   optimization: {

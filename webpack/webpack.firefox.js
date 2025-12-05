@@ -2,7 +2,6 @@ const { mergeWithCustomize, customizeArray } = require('webpack-merge');
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const commonConfig = require('./webpack.common');
 const { version } = require('../package.json');
 
@@ -38,12 +37,6 @@ module.exports = mergeWithCustomize({
           to: 'icons',
         },
       ],
-    }),
-    // HtmlWebpackPlugin for options.html
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, '../public/options.html'),
-      filename: 'options.html',
-      chunks: ['options'],
     }),
   ],
 });
